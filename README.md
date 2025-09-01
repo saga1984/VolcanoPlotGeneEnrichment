@@ -29,4 +29,4 @@ Paquete en R para análisis transcriptómico: integra resultados de **limma**, *
 [MIT](LICENSE)
 
 ## 👩‍💻 Author
-Developed with ❤️ in R by [Your Name]  
+Developed with ❤️ in R by [LinkedIn](https://www.linkedin.com/in/santiagovalentingalvangordillo) | [ORCID](https://orcid.org/0000-0001-6609-5661)   
