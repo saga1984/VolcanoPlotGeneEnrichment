@@ -20,8 +20,38 @@ Paquete en R para análisis transcriptómico: integra resultados de **limma**, *
 
 ## 📂 Outputs
 - CSV files: DEGs universe, significant genes, consensus 2oo3  
-- Volcano plots (with and without labels)  
-- ORA and GSEA results (tables and visualizations)  
+- Volcano plots (with and without labels)
+
+![Volcanoplot](man/figures/Volcano_Labels_Plot_Abscisic acid.jpeg)
+*Figure 1. Volcanoplot with labels.*  
+
+- ORA and GSEA results (tables and visualizations such as the following among others)  
+
+![ORA_GO_Bar_Ontology](man/figures/ORA_GO_Bar_Ontology.jpeg)
+*Figure 2. ORA_GO_Bar_Ontology.*  
+
+![ORA_KEGG_ClusterCompare_Dot_Ontology](man/figures/ORA_KEGG_ClusterCompare_Dot_Ontology.jpeg)
+*Figure 3. ORA_KEGG_ClusterCompare_Dot_Ontology.*  
+
+![ORA_KEGG_Clusters_EMap](man/figures/ORA_KEGG_Clusters_EMap.jpeg)
+*Figure 4. ORA_KEGG_Clusters_EMap.*
+
+![GSEA_KEGG_EMap](man/figures/GSEA_KEGG_EMap.jpeg)
+*Figure 5. GSEA_KEGG_EMap.*  
+
+![GSEA_KEGG_Dot](man/figures/GSEA_KEGG_Dot.jpeg)
+*Figure 6. GSEA_KEGG_Dot.*  
+
+![GSEA_GO_ONTOLOGY1_Dot](man/figures/GSEA_GO_ONTOLOGY1_Dot.jpeg)
+*Figure 7. GSEA_GO_ONTOLOGY1_Dot.*  
+
+![GSEA_GO_EMap](man/figures/GSEA_GO_EMap.jpeg)
+*Figure 8. GSEA_GO_EMap.jpeg*  
+
+![Pathway](man/figures/ath00561.pathview.png)
+*Figure 9.Volcanoplot with labels.*  
+
+
 
 ---
 
