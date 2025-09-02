@@ -22,7 +22,7 @@ Paquete en R para análisis transcriptómico: integra resultados de **limma**, *
 - CSV files: DEGs universe, significant genes, consensus 2oo3  
 - Volcano plots (with and without labels)
 
-![Volcanoplot](man/figures/Volcano_Labels_Plot_Abscisic acid.jpeg)
+![Volcanoplot](man/figures/Volcano_Labels_Plot_Abscisic_acid.jpeg)
 *Figure 1. Volcanoplot with labels.*  
 
 - ORA and GSEA results (tables and visualizations such as the following among others)  
