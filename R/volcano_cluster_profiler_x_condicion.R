@@ -199,7 +199,7 @@ degs_por_condicion <- function(archivo_limma,
   if(dir.exists(nuevo_dir)){
     print(paste("El directorio ", nuevo_dir, ", ya existe", sep = ""))
   } else {
-    dir.create(nuevo_dir)
+    dir.create(nuevo_dir, recursive = TRUE)
   }
   
   ####### obtener tablas de strings (ids comunes a 2 de 3 herramientas) #######
@@ -299,9 +299,9 @@ degs_por_condicion <- function(archivo_limma,
                linetype = 'dashed') +
     geom_point(size = 2) +
     scale_color_manual(values = colores,                                
-                       labels = c(paste("Downregulated", " (", down_t, ")", sep = ""),
+                       labels = c(paste("Downregulated", " (", down_c, ")", sep = ""),
                                   "Not significant", 
-                                  paste("Upregulated", " (", up_t, ")", sep = ""))) +
+                                  paste("Upregulated", " (", up_c, ")", sep = ""))) +
     labs(color = 'Diferentially Expressed Genes',
          x = expression("log"[2]*"FC"), y = expression("-log"[10]*"P-value")) +
     scale_x_continuous(breaks = seq(round(minimo_x) - 2, round(maximo_x) + 2, 2)) +
@@ -480,9 +480,9 @@ degs_por_condicion <- function(archivo_limma,
                linetype = 'dashed') +
     geom_point(size = 2) +
     scale_color_manual(values = colores,
-                       labels = c(paste("Downregulated", " (", down_t, ")", sep = ""),
+                       labels = c(paste("Downregulated", " (", down_c, ")", sep = ""),
                                   "Not significant",
-                                  paste("Upregulated", " (", up_t, ")", sep = ""))) +
+                                  paste("Upregulated", " (", up_c, ")", sep = ""))) +
     labs(color = 'Diferentially Expressed Genes',
          x = expression("log"[2]*"FC"), y = expression("-log"[10]*"P-value")) +
     scale_x_continuous(breaks = seq(round(minimo_x) - 2, round(maximo_x) + 2, 2)) +
