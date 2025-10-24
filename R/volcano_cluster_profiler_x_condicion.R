@@ -286,6 +286,10 @@ degs_por_condicion <- function(archivo_limma,
   # contar down
   down_t <- count(file[file$DEGs == "Downregulated",])
   
+  # contar_NS
+  not_significant_c <- count(file[file$DEGs == "Not Significant" & file$Common_2oo3 != "",])
+  not_significant_t <- count(file[file$DEGs == "Not Significant",])
+  
   # crear grafica
   volcano <- ggplot(data = file, 
                     aes(x = log2FC, 
@@ -314,30 +318,43 @@ degs_por_condicion <- function(archivo_limma,
   
   # visualizar en R
   print(volcano)
-  print(paste("Total Upreglated = ", up_t))
-  print(paste("Total Downreglated = ", down_t))
+  
+  
+  print(paste("Total: Upreglated = ", up_t))
+  print(paste("Total: Downreglated = ", down_t))
+  print(paste("Total: Not Significant = ", not_significant_t))
   print(paste("Common 2 out of 3: Upreglated = ", up_c))
-  print(paste("Common 2 out of 3 Downreglated = ", down_c))
+  print(paste("Common 2 out of 3: Downreglated = ", down_c))
+  print(paste("Total Not Significant = ", not_significant_c))
   
   # save output
   out11 <- "Total Upreglated"
   out12 <- up_t
+  
   out21 <- "Total Downreglated"
   out22 <- down_t
-  out31 <- "Common 2 out of 3 Upreglated" 
-  out32 <-  up_c
-  out41 <- "Common 2 out of 3 Downreglated"
-  out42 <- down_c
+  
+  out31 <- "Total Not Significant"
+  out32 <- not_significant_t
+  
+  out41 <- "Common 2 out of 3 Upreglated" 
+  out42 <-  up_c
+  
+  out51 <- "Common 2 out of 3 Downreglated"
+  out52 <- down_c
+  
+  out61 <- "Common 2 out of Not Significant" 
+  out62 <- not_significant_c
   
   # create df
-  df_count <- data.frame(matrix(nrow = 4, ncol = 2))
+  df_count <- data.frame(matrix(nrow = 6, ncol = 2))
   
   # define colnames
   colnames(df_count) <- c("DEGs", "Count")
   
   # populate df
-  df_count$DEGs <- c(out11, out21, out31, out41)
-  df_count$Count<- c(out12, out22, out32, out42)
+  df_count$DEGs <- c(out11, out21, out31, out41, out51, out61)
+  df_count$Count<- c(out12, out22, out32, out42, out52, out62)
   df_count$Count <- as.numeric(unlist(df_count$Count))
   
   # guardar/crear archivo en windows
