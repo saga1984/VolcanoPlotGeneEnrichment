@@ -77,6 +77,7 @@ degs_por_condicion <- function(archivo_limma,
                                corte = 1){
   
   
+  
   # cargar librerias
   library(tidyverse)
   library(data.table)
@@ -199,7 +200,7 @@ degs_por_condicion <- function(archivo_limma,
   if(dir.exists(nuevo_dir)){
     print(paste("El directorio ", nuevo_dir, ", ya existe", sep = ""))
   } else {
-    dir.create(nuevo_dir)
+    dir.create(nuevo_dir, recursive = TRUE)
   }
   
   ####### obtener tablas de strings (ids comunes a 2 de 3 herramientas) #######
@@ -231,21 +232,30 @@ degs_por_condicion <- function(archivo_limma,
   # agregar columna de Gene_IDs
   df_degs[, "Gene_ID"] <- row.names(df_degs) 
   
-  # agregar conteo 
+  # universo
   df_universe_clean <-  merge(df_degs[, c("Gene_ID", "Common_2oo3")],
                               df_universe_clean,
                               by = "Gene_ID")
   
-  # degs df
-  degs_sig <- df_universe_clean[df_universe_clean$Common_2oo3 == "Common2oo3" &
-                                  (df_universe_clean$DEGs == "Upregulated" |
-                                     df_universe_clean$DEGs == "Downregulated"),]
+  # degs df sig 2oo3
+  degs_sig_2oo3 <- df_universe_clean[df_universe_clean$Common_2oo3 == "Common2oo3" &
+                                       (df_universe_clean$DEGs == "Upregulated" |
+                                          df_universe_clean$DEGs == "Downregulated"),]
+  
+  # degs df all
+  degs_sig <- df_universe_clean[df_universe_clean$DEGs == "Upregulated" |
+                                  df_universe_clean$DEGs == "Downregulated",]
   
   ############################# guardar archivos ##################################
   
   # guardar/crear archivo en windows
   write.csv(x = df_universe_clean,
             file = paste(nuevo_dir, "/", "degs_universe_", tratamiento, ".csv", sep = ""),
+            row.names = FALSE)
+  
+  # guardar/crear archivo en windows
+  write.csv(x = degs_sig_2oo3,
+            file = paste(nuevo_dir, "/", "degs_sig_2oo3_", tratamiento, ".csv", sep = ""),
             row.names = FALSE)
   
   # guardar/crear archivo en windows
@@ -286,6 +296,10 @@ degs_por_condicion <- function(archivo_limma,
   # contar down
   down_t <- count(file[file$DEGs == "Downregulated",])
   
+  # contar_NS
+  not_significant_c <- count(file[file$DEGs == "Not Significant" & file$Common_2oo3 != "",])
+  not_significant_t <- count(file[file$DEGs == "Not Significant",])
+  
   # crear grafica
   volcano <- ggplot(data = file, 
                     aes(x = log2FC, 
@@ -299,9 +313,9 @@ degs_por_condicion <- function(archivo_limma,
                linetype = 'dashed') +
     geom_point(size = 2) +
     scale_color_manual(values = colores,                                
-                       labels = c(paste("Downregulated", " (", down_t, ")", sep = ""),
+                       labels = c(paste("Downregulated", " (", down_c, ")", sep = ""),
                                   "Not significant", 
-                                  paste("Upregulated", " (", up_t, ")", sep = ""))) +
+                                  paste("Upregulated", " (", up_c, ")", sep = ""))) +
     labs(color = 'Diferentially Expressed Genes',
          x = expression("log"[2]*"FC"), y = expression("-log"[10]*"P-value")) +
     scale_x_continuous(breaks = seq(round(minimo_x) - 2, round(maximo_x) + 2, 2)) +
@@ -314,30 +328,43 @@ degs_por_condicion <- function(archivo_limma,
   
   # visualizar en R
   print(volcano)
-  print(paste("Total Upreglated = ", up_t))
-  print(paste("Total Downreglated = ", down_t))
+  
+  
+  print(paste("Total: Upreglated = ", up_t))
+  print(paste("Total: Downreglated = ", down_t))
+  print(paste("Total: Not Significant = ", not_significant_t))
   print(paste("Common 2 out of 3: Upreglated = ", up_c))
-  print(paste("Common 2 out of 3 Downreglated = ", down_c))
+  print(paste("Common 2 out of 3: Downreglated = ", down_c))
+  print(paste("Total Not Significant = ", not_significant_c))
   
   # save output
   out11 <- "Total Upreglated"
   out12 <- up_t
+  
   out21 <- "Total Downreglated"
   out22 <- down_t
-  out31 <- "Common 2 out of 3 Upreglated" 
-  out32 <-  up_c
-  out41 <- "Common 2 out of 3 Downreglated"
-  out42 <- down_c
+  
+  out31 <- "Total Not Significant"
+  out32 <- not_significant_t
+  
+  out41 <- "Common 2 out of 3 Upreglated" 
+  out42 <-  up_c
+  
+  out51 <- "Common 2 out of 3 Downreglated"
+  out52 <- down_c
+  
+  out61 <- "Common 2 out of Not Significant" 
+  out62 <- not_significant_c
   
   # create df
-  df_count <- data.frame(matrix(nrow = 4, ncol = 2))
+  df_count <- data.frame(matrix(nrow = 6, ncol = 2))
   
   # define colnames
   colnames(df_count) <- c("DEGs", "Count")
   
   # populate df
-  df_count$DEGs <- c(out11, out21, out31, out41)
-  df_count$Count<- c(out12, out22, out32, out42)
+  df_count$DEGs <- c(out11, out21, out31, out41, out51, out61)
+  df_count$Count<- c(out12, out22, out32, out42, out52, out62)
   df_count$Count <- as.numeric(unlist(df_count$Count))
   
   # guardar/crear archivo en windows
@@ -480,9 +507,9 @@ degs_por_condicion <- function(archivo_limma,
                linetype = 'dashed') +
     geom_point(size = 2) +
     scale_color_manual(values = colores,
-                       labels = c(paste("Downregulated", " (", down_t, ")", sep = ""),
+                       labels = c(paste("Downregulated", " (", down_c, ")", sep = ""),
                                   "Not significant",
-                                  paste("Upregulated", " (", up_t, ")", sep = ""))) +
+                                  paste("Upregulated", " (", up_c, ")", sep = ""))) +
     labs(color = 'Diferentially Expressed Genes',
          x = expression("log"[2]*"FC"), y = expression("-log"[10]*"P-value")) +
     scale_x_continuous(breaks = seq(round(minimo_x) - 2, round(maximo_x) + 2, 2)) +

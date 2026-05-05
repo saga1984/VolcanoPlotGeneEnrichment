@@ -126,6 +126,8 @@ wraper_cluster_profiler <- function(degs,
 
   # cargar librerias
   library(data.table)
+  library(readxl)
+  library(writexl)
   library(RColorBrewer)
   library(ggrepel)
   library(tidyverse) # includes ggplot2, for data visualisation. dplyr, for data manipulation.
@@ -137,7 +139,6 @@ wraper_cluster_profiler <- function(degs,
   library(ggupset) # for visualisations
   library(pathview)
   library("org.At.tair.db", character.only = TRUE) # background genes
-  
   
   ################## crear columna de log2FC en trinotate ########################
   
@@ -280,7 +281,6 @@ wraper_cluster_profiler <- function(degs,
   # nombrar vector de universo
   names(universe_gsea_vec) <- universe_gsea_ordered$TAIR
   
-  
   # mensaje a consola de vector de GSEA
   cat("\nVector de Ranking de GSEA\n")
   # verificar vector de universo
@@ -309,19 +309,25 @@ wraper_cluster_profiler <- function(degs,
                     keyType = "TAIR",
                     readable = TRUE,
                     ont = "ALL",
+                    pAdjustMethod = "BH",
                     pvalueCutoff  = 0.05,
                     qvalueCutoff  = 0.10)
   
+  # verificar keyTypes
+  keytypes(org.At.tair.db)
+  
+  head(keys(org.At.tair.db, keytype = "TAIR"))
   
   # convertir a tabla
   table_GO_enrich <- as.data.frame(oraGO)
   
-  # guardar el objeto como tabla
-  write.csv(x = table_GO_enrich,
-            file = paste(ora_dir, "table_ORA_GO.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla  "nuevo bloque"
+  write_xlsx(x = table_GO_enrich,
+             paste(ora_dir, "table_ORA_GO.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
-  # eliminar columnas innecesarias
+  # eliminar columnas innecesarias "nuevo bloque"
   table_GO_enrich <- table_GO_enrich[, c("ID",
                                          "Description",
                                          "ONTOLOGY",
@@ -329,7 +335,9 @@ wraper_cluster_profiler <- function(degs,
                                          "p.adjust",
                                          "qvalue",
                                          "geneID",
-                                         "Count")]
+                                         "Count",
+                                         "GeneRatio",
+                                         "BgRatio")]
   
   # separar columnas
   table_GO_enrich_long <- table_GO_enrich %>%
@@ -367,7 +375,7 @@ wraper_cluster_profiler <- function(degs,
                                                   "DEGs")],
                                  by = "TAIR")
   
-  # reordenar columnas
+  # reordenar columnas "nuevo bloque"
   table_GO_enrich_final <- table_GO_enrich_final[, c("ID",
                                                      "TAIR",
                                                      "Gene_ID",
@@ -375,6 +383,8 @@ wraper_cluster_profiler <- function(degs,
                                                      "Description",
                                                      "ONTOLOGY",
                                                      "Count",
+                                                     "GeneRatio",
+                                                     "BgRatio",
                                                      "pvalue",
                                                      "p.adjust",
                                                      "qvalue",
@@ -386,10 +396,11 @@ wraper_cluster_profiler <- function(degs,
   # ordenar por description
   table_GO_enrich_final <- table_GO_enrich_final[order(table_GO_enrich_final[, "Description"]),]
   
-  # guardar el objeto como tabla
-  write.csv(x = table_GO_enrich_final,
-            file = paste(ora_dir, "table_ORA_GO_final.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_GO_enrich_final,
+             paste(ora_dir, "table_ORA_GO_final.xlsx",sep = ""), 
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ###################### bar
   
@@ -472,6 +483,7 @@ wraper_cluster_profiler <- function(degs,
                        keyType = "TAIR",
                        readable = TRUE,
                        ont = "ALL",
+                       pAdjustMethod = "BH",
                        pvalueCutoff  = 0.05,
                        qvalueCutoff  = 0.10)
   
@@ -479,10 +491,11 @@ wraper_cluster_profiler <- function(degs,
   activated_ora_go <- as.data.frame(oraGO_up) %>%
     mutate(GeneSet = "Activated")
   
-  # guardar el objeto como tabla
-  write.csv(x = activated_ora_go,
-            file = paste(ora_dir, "table_ORA_GO_Up.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = activated_ora_go, 
+             paste(ora_dir, "table_ORA_GO_Up.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   # TAIR to Blast
   activated_gene2symbol <- oraGO_up@gene2Symbol
@@ -501,7 +514,7 @@ wraper_cluster_profiler <- function(degs,
   # eliminar NAs del data frame
   gene2symbol_activated <- na.omit(gene2symbol_activated)
   
-  # eliminar columnas innecesarias
+  # eliminar columnas innecesarias "nuevo bloque"
   activated_ORA_GO <- activated_ora_go[, c("ID",
                                            "Description",
                                            "ONTOLOGY",
@@ -510,7 +523,9 @@ wraper_cluster_profiler <- function(degs,
                                            "qvalue",
                                            "geneID",
                                            "GeneSet",
-                                           "Count")]
+                                           "Count",
+                                           "GeneRatio",
+                                           "BgRatio")]
   
   # separar columnas
   activated_ORA_GO_long <- activated_ORA_GO %>%
@@ -531,7 +546,7 @@ wraper_cluster_profiler <- function(degs,
                                                    "DEGs")],
                                   by = "TAIR")
   
-  # reordenar columnas
+  # reordenar columnas "nuevo bloque"
   activated_ORA_GO_final <- activated_ORA_GO_final[, c("ID",
                                                        "TAIR",
                                                        "Gene_ID",
@@ -539,6 +554,8 @@ wraper_cluster_profiler <- function(degs,
                                                        "Description",
                                                        "ONTOLOGY",
                                                        "Count",
+                                                       "GeneRatio",
+                                                       "BgRatio",
                                                        "GeneSet",
                                                        "pvalue",
                                                        "p.adjust",
@@ -551,11 +568,11 @@ wraper_cluster_profiler <- function(degs,
   # ordenar por description
   activated_ORA_GO_final <- activated_ORA_GO_final[order(activated_ORA_GO_final[, "Description"]),]
   
-  # guardar el objeto como tabla
-  write.csv(x = activated_ORA_GO_final,
-            file = paste(ora_dir, "table_ORA_GO_Up_final.csv",sep = ""),
-            row.names = FALSE)
-  
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = activated_ORA_GO_final, 
+             paste(ora_dir, "table_ORA_GO_Up_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ##################### crear lista de reprimidos ################################
   oraGO_down <- enrichGO(gene = Suppressed_ora_go,
@@ -564,6 +581,7 @@ wraper_cluster_profiler <- function(degs,
                          keyType = "TAIR",
                          readable = TRUE,
                          ont = "ALL",
+                         pAdjustMethod = "BH",
                          pvalueCutoff  = 0.05,
                          qvalueCutoff  = 0.10)
   
@@ -571,10 +589,11 @@ wraper_cluster_profiler <- function(degs,
   suppressed_ora_go <- as.data.frame(oraGO_down) %>%
     mutate(GeneSet = "Suppressed")
   
-  # guardar el objeto como tabla
-  write.csv(x = suppressed_ora_go,
-            file = paste(ora_dir, "table_ORA_GO_Down.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = suppressed_ora_go,
+             paste(ora_dir, "table_ORA_GO_Down.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   # TAIR to Blast
   suppressed_gene2symbol <- oraGO_down@gene2Symbol
@@ -593,7 +612,7 @@ wraper_cluster_profiler <- function(degs,
   # eliminar NAs del data frame
   gene2symbol_suppressed <- na.omit(gene2symbol_suppressed)
   
-  # eliminar columnas innecesarias
+  # eliminar columnas innecesarias "nuevo bloque"
   suppressed_ORA_GO <- suppressed_ora_go[, c("ID",
                                              "Description",
                                              "ONTOLOGY",
@@ -602,7 +621,9 @@ wraper_cluster_profiler <- function(degs,
                                              "qvalue",
                                              "geneID",
                                              "GeneSet",
-                                             "Count")]
+                                             "Count", 
+                                             "GeneRatio",
+                                             "BgRatio")]
   
   # separar columnas
   suppressed_ORA_GO_long <- suppressed_ORA_GO %>%
@@ -623,14 +644,16 @@ wraper_cluster_profiler <- function(degs,
                                                     "DEGs")],
                                    by = "TAIR")
   
-  # reordenar columnas
+  # reordenar columnas "nuevo bloque"
   suppressed_ORA_GO_final <- suppressed_ORA_GO_final[, c("ID",
                                                          "TAIR",
                                                          "Gene_ID",
                                                          "geneID",
                                                          "Description",
                                                          "ONTOLOGY",
-                                                         "Count",
+                                                         "Count", 
+                                                         "GeneRatio",	
+                                                         "BgRatio",
                                                          "GeneSet",
                                                          "pvalue",
                                                          "p.adjust",
@@ -643,10 +666,11 @@ wraper_cluster_profiler <- function(degs,
   # ordenar por description
   suppressed_ORA_GO_final <- suppressed_ORA_GO_final[order(suppressed_ORA_GO_final[, "Description"]),]
   
-  # guardar el objeto como tabla
-  write.csv(x = suppressed_ORA_GO_final,
-            file = paste(ora_dir, "table_ORA_GO_Down_final.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = suppressed_ORA_GO_final,
+             paste(ora_dir, "table_ORA_GO_Down_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ########################### graficar ###########################################
   
@@ -660,19 +684,21 @@ wraper_cluster_profiler <- function(degs,
   
   ################## guardar archivos combinados Up Down #########################
   
-  # guardar el objeto como tabla
-  write.csv(x = resultados_combinados_ora_go,
-            file = paste(ora_dir, "table_ORA_GO_UpDown.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = resultados_combinados_ora_go,
+             paste(ora_dir, "table_ORA_GO_UpDown.xlsx", sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   # unir archivos finales
   resultados_combinados_ora_go_final <- rbind(activated_ORA_GO_final,
                                               suppressed_ORA_GO_final)
   
-  # guardar el objeto como tabla
-  write.csv(x = resultados_combinados_ora_go_final,
-            file = paste(ora_dir, "table_ORA_GO_UpDown_final.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = resultados_combinados_ora_go_final, 
+             paste(ora_dir, "table_ORA_GO_UpDown_final.xlsx", sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ########################### greficar continuacion ##############################
   
@@ -814,15 +840,21 @@ wraper_cluster_profiler <- function(degs,
     pvalueCutoff = 0.05,
     qvalueCutoff = 0.10)
   
+  
+  # verificar keyTypes
+  keytypes(org.At.tair.db)
+  head(keys(org.At.tair.db, keytype = "TAIR"))
+  
   # convertir a tabla
   table_compare_results_go <- as.data.frame(compare_results_GO)
   
-  # guardar el objeto como tabla
-  write.csv(x = table_compare_results_go,
-            file = paste(ora_dir, "table_ORA_ClusterCompare_GO.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_compare_results_go,
+             paste(ora_dir, "table_ORA_ClusterCompare_GO.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
-  # eliminar columnas innecesarias
+  # eliminar columnas innecesarias "nuevo bloque"
   table_compare_results_go <- table_compare_results_go[, c("ID",
                                                            "Description",
                                                            "ONTOLOGY",
@@ -831,7 +863,9 @@ wraper_cluster_profiler <- function(degs,
                                                            "p.adjust",
                                                            "qvalue",
                                                            "geneID",
-                                                           "Count")]
+                                                           "Count",
+                                                           "GeneRatio",
+                                                           "BgRatio")]
   
   # separar columnas
   table_compare_results_go_long <- table_compare_results_go %>%
@@ -850,7 +884,7 @@ wraper_cluster_profiler <- function(degs,
                                                            "DEGs")],
                                           by = "TAIR")
   
-  # reordenar columnas
+  # reordenar columnas "nuevo bloque"
   table_compare_results_go_final <- table_compare_results_go_final[, c("ID",
                                                                        "TAIR",
                                                                        "Gene_ID",
@@ -858,6 +892,8 @@ wraper_cluster_profiler <- function(degs,
                                                                        "ONTOLOGY",
                                                                        "Cluster",
                                                                        "Count",
+                                                                       "GeneRatio",
+                                                                       "BgRatio",
                                                                        "pvalue",
                                                                        "p.adjust",
                                                                        "qvalue",
@@ -870,9 +906,10 @@ wraper_cluster_profiler <- function(degs,
   table_compare_results_go_final <- table_compare_results_go_final[order(table_compare_results_go_final[, "Description"]),]
   
   # guardar el objeto como tabla
-  write.csv(x = table_compare_results_go_final,
-            file = paste(ora_dir, "table_ORA_ClusterCompare_GO_final.csv",sep = ""),
-            row.names = FALSE)
+  write_xlsx(x = table_compare_results_go_final,
+             paste(ora_dir, "table_ORA_ClusterCompare_GO_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ###################### dot
   
@@ -915,19 +952,37 @@ wraper_cluster_profiler <- function(degs,
   ################################################################################
   
   # obtener los Gene_IDs para la funcion enrichKEGG(), (podemos perder algunos genes aquí)
+  # pero es un paso innecesario dado a los keyTypes limitados!
   ORA_TAIR_2_ENTREZID <-bitr(names(universe_ora_vec),
                              fromType = "TAIR",
                              toType = "ENTREZID",
                              OrgDb = org.At.tair.db)
   
-  # add ENTREZ IDs column
-  universe_ora_kegg <- merge(universe_ora_ordered, 
-                             ORA_TAIR_2_ENTREZID, 
-                             by = "TAIR")
+  ################################################################################
+  
+  "nuevo bloque"
+  # ENTREZ to EC
+  ORA_TAIR_2_EC <-bitr(names(universe_ora_vec),
+                       fromType = "TAIR",
+                       toType = "ENZYME",
+                       OrgDb = org.At.tair.db)
+  
+  # join ENTREZ y ENZYME by TAIR
+  ENTREZ_ENZYME_TAIR <- merge(ORA_TAIR_2_ENTREZID,
+                              ORA_TAIR_2_EC,
+                              by = "TAIR",
+                              all.x = TRUE)
+  
+  # add ENTREZ and ENZYME IDs column
+  universe_ora_kegg <- merge(universe_ora_ordered,
+                             ENTREZ_ENZYME_TAIR,
+                             by = "TAIR",
+                             all.x = TRUE)
   
   # reordenar nombres de columnas
-  universe_ora_kegg <- universe_ora_kegg[,c("ENTREZID",
-                                            "TAIR",
+  universe_ora_kegg <- universe_ora_kegg[,c("TAIR",
+                                            "ENTREZID",
+                                            "ENZYME",
                                             "Gene_ID",
                                             "Blast1",
                                             "Gene_Symbol",
@@ -940,44 +995,67 @@ wraper_cluster_profiler <- function(degs,
   universe_ora_kegg <- universe_ora_kegg[order(universe_ora_kegg$log2FC, decreasing = TRUE),]
   
   # crear vector de universo
-  universe_ora_kegg_vec <- universe_ora_kegg$log2FC
+  universe_ora_kegg_vec_entrez <- universe_ora_kegg$log2FC
+  universe_ora_kegg_vec_tair <- universe_ora_kegg$log2FC # para pathview()
   
   # nombrar vector de universo
-  names(universe_ora_kegg_vec) <- universe_ora_kegg$ENTREZID
+  names(universe_ora_kegg_vec_entrez) <- universe_ora_kegg$ENTREZID
+  names(universe_ora_kegg_vec_tair) <- universe_ora_kegg$TAIR # para pathview()
   
   # verificar vector de universo
   cat("\nvector KEGG universo\n")
-  cat("Primeros valores", head(universe_ora_kegg_vec), sep = "\n")
-  cat("Ultimos valores", tail(universe_ora_kegg_vec), sep = "\n")
+  cat("ENTREZ:", head(names(universe_ora_kegg_vec_entrez)))
+  cat("TAIR:", head(names(universe_ora_kegg_vec_tair)))
+  cat("Primeros valores ENTREZ:", head(universe_ora_kegg_vec_entrez), sep = "\n")
+  cat("Primeros valores TAIR:", head(universe_ora_kegg_vec_tair), sep = "\n")
+  cat("Ultimos valores ENTREZ:", tail(universe_ora_kegg_vec_entrez), sep = "\n")
+  cat("Ultimos valores TAIR:", tail(universe_ora_kegg_vec_tair), sep = "\n")
   
   ########### degs significativos kegg ###########
+  
+  # class(universe_ora_kegg$Gene_ID)
+  # class(archivo_degs$Gene_ID)
+  
+  # length(intersect(universe_ora_kegg$Gene_ID,
+  #                  archivo_degs$Gene_ID))
+  
+  cat("Numero de Genes en universe:", length(unique(universe_ora_kegg$Gene_ID)), "\n")
+  cat("Numero de Genes en archivo_degs:", length(unique(archivo_degs$Gene_ID)), "\n")
+  cat("Numero de Genes en Intersección:", length(intersect(universe_ora_kegg$Gene_ID,
+                                                           archivo_degs$Gene_ID)), "\n")
   
   # filtrar por valores con valor de TAIR
   degs_sig_ora_kegg <- universe_ora_kegg[universe_ora_kegg$Gene_ID %in% archivo_degs$Gene_ID,]
   
   # definir valores
-  degs_sig_ora_kegg_vec <- degs_sig_ora_kegg$log2FC
+  degs_sig_ora_kegg_vec_entrez <- degs_sig_ora_kegg$log2FC
+  degs_sig_ora_kegg_vec_tair <- degs_sig_ora_kegg$log2FC
   
   # definir nombre de vector
-  names(degs_sig_ora_kegg_vec) <- degs_sig_ora_kegg$ENTREZID
+  names(degs_sig_ora_kegg_vec_entrez) <- degs_sig_ora_kegg$ENTREZID
+  names(degs_sig_ora_kegg_vec_tair) <- degs_sig_ora_kegg$TAIR
   
   # visualizar vector de nombres
-  cat("\nvector KEGG universo\n")
-  cat("Primeros valores", head(degs_sig_ora_kegg_vec), sep = "\n")
-  cat("Primeros valores", tail(degs_sig_ora_kegg_vec), sep = "\n")
+  cat("\nvector KEGG estadisticamente significativos\n")
+  cat("Primeros valores ENTREZ:", head(degs_sig_ora_kegg_vec_entrez))
+  cat("Primeros valores TAIR:", head(degs_sig_ora_kegg_vec_tair))
+  cat("Ultimos valores ENTREZ:", tail(degs_sig_ora_kegg_vec_entrez))
+  cat("Ultimos valores TAIR:", tail(degs_sig_ora_kegg_vec_tair))
   
   ################################################################################
   ############################## enrichKEGG ######################################
   ################################################################################
   
-  # Arabidopsis thaliana
-  oraKEGG <- enrichKEGG(universe = names(universe_ora_kegg_vec),
-                        gene = names(degs_sig_ora_kegg_vec),
+  # headers from ENTREZ: "818236" "838632" "824262" "838633" "824470" "824470"
+  oraKEGG <- enrichKEGG(universe = names(universe_ora_kegg_vec_entrez),
+                        gene = names(degs_sig_ora_kegg_vec_entrez),
                         minGSSize = min_set_kegg,
                         maxGSSize = max_set_kegg,
-                        organism = "ath", 
+                        organism = "ath",
                         keyType = "ncbi-geneid",
+                        pAdjustMethod = "BH",
                         pvalueCutoff = 0.05)
+  
   
   # remover especie de filas
   oraKEGG@result$Description <- gsub(
@@ -990,16 +1068,19 @@ wraper_cluster_profiler <- function(degs,
   # cambiar nombre de columna de IDs de TAIR
   colnames(table_ORA_KEGG)[8] <- "ENTREZID"
   
-  # guardar el objeto como tabla
-  write.csv(x = table_ORA_KEGG,
-            file = paste(ora_dir, "table_ORA_KEGG.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_ORA_KEGG,
+             paste(ora_dir, "table_ORA_KEGG.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
-  # eliminar columnas innecesarias
+  # eliminar columnas innecesarias "nuevo bloque"
   table_ORA_KEGG_tmp <- table_ORA_KEGG[, c("ID",
                                            "Description",
                                            "ENTREZID",
-                                           "Count",
+                                           "Count", 
+                                           "GeneRatio",
+                                           "BgRatio",
                                            "pvalue",
                                            "p.adjust",
                                            "qvalue")]
@@ -1019,12 +1100,15 @@ wraper_cluster_profiler <- function(degs,
   # ordenar columnas por Trinity ID
   table_ORA_KEGG_final <- table_ORA_KEGG_final[order(table_ORA_KEGG_final$Gene_ID),]
   
-  # cambiar orden de columnas
+  # cambiar orden de columnas "nuevo bloque"
   table_ORA_KEGG_final <- table_ORA_KEGG_final[,c("Gene_ID",
-                                                  "ENTREZID",
                                                   "TAIR",
+                                                  "ENTREZID",
+                                                  "ENZYME",
                                                   "ID",
-                                                  "Description",
+                                                  "Description", 
+                                                  "GeneRatio",
+                                                  "BgRatio",
                                                   "pvalue",
                                                   "p.adjust",
                                                   "qvalue",
@@ -1035,10 +1119,11 @@ wraper_cluster_profiler <- function(degs,
                                                   "Pval",
                                                   "Padj")]
   
-  # guardar el objeto como tabla
-  write.csv(x = table_ORA_KEGG_final,
-            file = paste(ora_dir, "table_ORA_KEGG_final.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_ORA_KEGG_final,
+             paste(ora_dir, "table_ORA_KEGG_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ##################### dot plot 
   
@@ -1109,22 +1194,22 @@ wraper_cluster_profiler <- function(degs,
   }
   
   ################################################################################
-  ########################## EnrichGO: Compare Cluster ###########################
+  ########################## EnrichKEGG: Compare Cluster ###########################
   ################################################################################
   
   #################### separar por inducidos y reprimidos ########################
   
   # crear lista de genes
   gene_lists_kegg <- list(
-    Induced_kegg = names(degs_sig_ora_kegg_vec[degs_sig_ora_kegg_vec > 0]),
-    Repressed_kegg = names(degs_sig_ora_kegg_vec[degs_sig_ora_kegg_vec < 0])
+    Induced_kegg = names(degs_sig_ora_kegg_vec_entrez[degs_sig_ora_kegg_vec_entrez > 0]),
+    Repressed_kegg = names(degs_sig_ora_kegg_vec_entrez[degs_sig_ora_kegg_vec_entrez < 0])
   )
   
   # comparar setd de inducidos y reprimidos
   compare_results_KEGG <- compareCluster(
     geneCluster = gene_lists_kegg,
     fun = "enrichKEGG",
-    universe = names(universe_ora_kegg_vec),
+    universe = names(universe_ora_kegg_vec_entrez),
     minGSSize = min_set_kegg,
     maxGSSize = max_set_kegg,
     organism = "ath", 
@@ -1142,16 +1227,19 @@ wraper_cluster_profiler <- function(degs,
   # cambiar nombre de columna de IDs de TAIR
   colnames(table_ORA_ClusterCompare_KEGG)[9] <- "ENTREZID"
   
-  # guardar el objeto como tabla
-  write.csv(x = table_ORA_ClusterCompare_KEGG,
-            file = paste(ora_dir, "table_ORA_ClusterCompare_KEGG.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_ORA_ClusterCompare_KEGG,
+             paste(ora_dir, "table_ORA_ClusterCompare_KEGG.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
-  # eliminar columnas innecesarias
+  # eliminar columnas innecesarias "nuevo bloque"
   table_ORA_ClusterCompare_KEGG_tmp <- table_ORA_ClusterCompare_KEGG[, c("ID",
                                                                          "Description",
                                                                          "ENTREZID",
                                                                          "Count",
+                                                                         "GeneRatio",	
+                                                                         "BgRatio",
                                                                          "Cluster",
                                                                          "pvalue",
                                                                          "p.adjust",
@@ -1169,12 +1257,15 @@ wraper_cluster_profiler <- function(degs,
   # ordenar columnas por Description
   table_ORA_ClusterCompare_KEGG_final <- table_ORA_ClusterCompare_KEGG_final[order(table_ORA_ClusterCompare_KEGG_final$Description),]
   
-  # cambiar orden de columnas
+  # cambiar orden de columnas "nuevo bloque"
   table_ORA_ClusterCompare_KEGG_final <- table_ORA_ClusterCompare_KEGG_final[,c("Gene_ID",
-                                                                                "ENTREZID",
                                                                                 "TAIR",
+                                                                                "ENTREZID",
+                                                                                "ENZYME",
                                                                                 "ID",
-                                                                                "Description",
+                                                                                "Description", 
+                                                                                "GeneRatio",
+                                                                                "BgRatio",
                                                                                 "Cluster",
                                                                                 "pvalue",
                                                                                 "p.adjust",
@@ -1187,10 +1278,11 @@ wraper_cluster_profiler <- function(degs,
                                                                                 "Padj")]
   
   
-  # guardar el objeto como tabla
-  write.csv(x = table_ORA_ClusterCompare_KEGG_final,
-            file = paste(ora_dir, "table_ORA_ClusterCompare_KEGG_final.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_ORA_ClusterCompare_KEGG_final,
+             paste(ora_dir, "table_ORA_ClusterCompare_KEGG_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ##################### dot
   
@@ -1231,15 +1323,16 @@ wraper_cluster_profiler <- function(degs,
   ################################################################################
   
   # inducidos
-  Activated_ora_kegg_up <- names(degs_sig_ora_kegg_vec[degs_sig_ora_kegg_vec > 0])
+  Activated_ora_kegg_up <- names(degs_sig_ora_kegg_vec_entrez[degs_sig_ora_kegg_vec_entrez > 0])
   
   # up
   oraKEGG_up <- enrichKEGG(gene = Activated_ora_kegg_up, 
-                           universe = names(universe_ora_kegg_vec),
+                           universe = names(universe_ora_kegg_vec_entrez),
                            minGSSize = min_set_kegg,
                            maxGSSize = max_set_kegg,
                            organism = "ath", 
                            keyType = "ncbi-geneid",
+                           pAdjustMethod = "BH",
                            pvalueCutoff = 0.05)
   
   # remover especie de descripcion
@@ -1254,16 +1347,19 @@ wraper_cluster_profiler <- function(degs,
   # cambiar nombre de columna de IDs de TAIR
   colnames(table_ORA_KEGG_up)[8] <- "ENTREZID"
   
-  # guardar el objeto como tabla
-  write.csv(x = table_ORA_KEGG_up,
-            file = paste(ora_dir, "table_ORA_KEGG_Up.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_ORA_KEGG_up,
+             paste(ora_dir, "table_ORA_KEGG_Up.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   # eliminar columnas innecesarias
   table_ORA_KEGG_up_tmp <- table_ORA_KEGG_up[, c("ID",
                                                  "Description",
                                                  "ENTREZID",
-                                                 "Count",
+                                                 "Count", 
+                                                 "GeneRatio",
+                                                 "BgRatio",
                                                  "GeneSet",
                                                  "pvalue",
                                                  "p.adjust",
@@ -1284,12 +1380,15 @@ wraper_cluster_profiler <- function(degs,
   # ordenar columnas por Trinity ID
   table_ORA_KEGG_up_final <- table_ORA_KEGG_up_final[order(table_ORA_KEGG_up_final$Gene_ID),]
   
-  # cambiar orden de columnas
+  # cambiar orden de columnas "nuevo bloque"
   table_ORA_KEGG_up_final <- table_ORA_KEGG_up_final[,c("Gene_ID",
-                                                        "ENTREZID",
                                                         "TAIR",
+                                                        "ENTREZID",
+                                                        "ENZYME",
                                                         "ID",
                                                         "Description",
+                                                        "GeneRatio",
+                                                        "BgRatio",
                                                         "pvalue",
                                                         "p.adjust",
                                                         "qvalue",
@@ -1301,23 +1400,25 @@ wraper_cluster_profiler <- function(degs,
                                                         "Pval",
                                                         "Padj")]
   
-  # guardar el objeto como tabla
-  write.csv(x = table_ORA_KEGG_up_final,
-            file = paste(ora_dir, "table_ORA_KEGG_Up_final.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_ORA_KEGG_up_final,
+             paste(ora_dir, "table_ORA_KEGG_Up_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ################################################################################
   
   # reprimidos
-  Suppressed_ora_kegg_down <- names(degs_sig_ora_kegg_vec[degs_sig_ora_kegg_vec < 0])
+  Suppressed_ora_kegg_down <- names(degs_sig_ora_kegg_vec_entrez[degs_sig_ora_kegg_vec_entrez < 0])
   
   # down
   oraKEGG_down <- enrichKEGG(gene = Suppressed_ora_kegg_down,
-                             universe = names(universe_ora_kegg_vec),
+                             universe = names(universe_ora_kegg_vec_entrez),
                              minGSSize = min_set_kegg,
                              maxGSSize = max_set_kegg,
                              organism = "ath", 
                              keyType = "ncbi-geneid",
+                             pAdjustMethod = "BH",
                              pvalueCutoff = 0.05)
   
   # remover especie de descripcion
@@ -1333,15 +1434,18 @@ wraper_cluster_profiler <- function(degs,
   colnames(table_ORA_KEGG_down)[8] <- "ENTREZID"
   
   # guardar el objeto como tabla
-  write.csv(x = table_ORA_KEGG_down,
-            file = paste(ora_dir, "table_ORA_KEGG_Down.csv",sep = ""),
-            row.names = FALSE)
+  write_xlsx(x = table_ORA_KEGG_down,
+             paste(ora_dir, "table_ORA_KEGG_Down.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
-  # eliminar columnas innecesarias
+  # eliminar columnas innecesarias "nuevo bloque"
   table_ORA_KEGG_down_tmp <- table_ORA_KEGG_down[, c("ID",
                                                      "Description",
                                                      "ENTREZID",
                                                      "Count",
+                                                     "GeneRatio",
+                                                     "BgRatio",
                                                      "GeneSet",
                                                      "pvalue",
                                                      "p.adjust",
@@ -1362,12 +1466,15 @@ wraper_cluster_profiler <- function(degs,
   # ordenar columnas por Trinity ID
   table_ORA_KEGG_down_final <- table_ORA_KEGG_down_final[order(table_ORA_KEGG_down_final$Gene_ID),]
   
-  # cambiar orden de columnas
+  # cambiar orden de columnas "nuevo bloque"
   table_ORA_KEGG_down_final <- table_ORA_KEGG_down_final[,c("Gene_ID",
-                                                            "ENTREZID",
                                                             "TAIR",
+                                                            "ENTREZID",
+                                                            "ENZYME",
                                                             "ID",
-                                                            "Description",
+                                                            "Description", 
+                                                            "GeneRatio",
+                                                            "BgRatio",
                                                             "pvalue",
                                                             "p.adjust",
                                                             "qvalue",
@@ -1380,10 +1487,11 @@ wraper_cluster_profiler <- function(degs,
                                                             "Padj")]
   
   
-  # guardar el objeto como tabla
-  write.csv(x = table_ORA_KEGG_down_final,
-            file = paste(ora_dir, "table_ORA_KEGG_Down_final.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = table_ORA_KEGG_down_final,
+             paste(ora_dir, "table_ORA_KEGG_Down_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ############################### graficar #######################################
   
@@ -1398,20 +1506,22 @@ wraper_cluster_profiler <- function(degs,
   ##################### guardar archivos combinados ##############################
   
   # guardar el objeto como tabla
-  write.csv(x = resultados_combinados_ora_kegg,
-            file = paste(ora_dir, "table_ORA_KEGG_UpDown.csv", sep = ""),
-            row.names = FALSE)
+  write_xlsx(x = resultados_combinados_ora_kegg,
+             paste(ora_dir, "table_ORA_KEGG_UpDown.xlsx", sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   # unir data frames
   resultados_combinados_ora_kegg_final <- rbind(table_ORA_KEGG_up_final, 
                                                 table_ORA_KEGG_down_final)
   
-  # guardar el objeto como tabla
-  write.csv(x = resultados_combinados_ora_kegg_final,
-            file = paste(ora_dir, "table_ORA_KEGG_UpDown_final.csv",sep = ""),
-            row.names = FALSE)
+  # guardar el objeto como tabla "nuevo bloque"
+  write_xlsx(x = resultados_combinados_ora_kegg_final,
+             paste(ora_dir, "table_ORA_KEGG_UpDown_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
-  ####################### greficar continuacion ##################################
+  ####################### graficar continuacion ##################################
   
   # crear col de gene ratio numerica
   for(i in 1:nrow(resultados_combinados_ora_kegg)){
@@ -1527,7 +1637,7 @@ wraper_cluster_profiler <- function(degs,
       
     }, error = function(e) {
       # imprimir el mensaje de error
-      message("ocurrio un error durante la graficacion de GO-Dot-All: ", e$message)
+      message("ocurrio un error durante la graficacion de KEGG-Dot-All: ", e$message)
     })
     
   }
@@ -1746,7 +1856,7 @@ wraper_cluster_profiler <- function(degs,
       
     }, error = function(e) {
       # imprimir el mensaje de error
-      message("ocurrio un error durante la graficacion de GSEA-EMap: ", e$message)
+      message("ocurrio un error durante la graficacion de KEGG-EMap: ", e$message)
     })
     
   }
@@ -1780,7 +1890,7 @@ wraper_cluster_profiler <- function(degs,
       
     }, error = function(e) {
       # imprimir el mensaje de error
-      message("ocurrio un error durante la graficacion de ORA-Map: ", e$message)
+      message("ocurrio un error durante la graficacion de ORA-KEGG-Map: ", e$message)
     })
     
   }
@@ -1914,51 +2024,90 @@ wraper_cluster_profiler <- function(degs,
   ################################################################################
   ################################################################################
   
+  ########################## rutas personalizadas ################################
+  
+  # # mostrar las rutas enriquecidas en KEGGgraph
+  # cat("\nLas rutas enriquecidas inducidas son:", nrow(table_ORA_ClusterCompare_KEGG), "\n")
+  # 
+  # if(nrow(table_ORA_ClusterCompare_KEGG) == 0){
+  #   cat("saltar analisis")
+  # } else {
+  # 
+  #   for(i in 1:nrow(table_ORA_ClusterCompare_KEGG)){
+  #     cat(paste(i,".- ", table_ORA_ClusterCompare_KEGG$ID[i],
+  #               "\t",
+  #               table_ORA_ClusterCompare_KEGG$Cluster[i],
+  #               " = ",
+  #               table_ORA_ClusterCompare_KEGG$Description[i], sep = ""), sep = "\n")
+  #   }
+  # 
+  #   # pedir rutas inducidas a usuario
+  #   KEGG_paths_cluster = readline(prompt = "Elige las rutas enriquecidas que deseas analizar: " )
+  # 
+  #   # volver vector
+  #   KEGG_paths_cluster_vector <- unlist(strsplit(KEGG_paths_cluster, split = " |,|:|;"))
+  # 
+  #   # movernos a directorio destino
+  #   setwd(dir = ora_dir)
+  # 
+  #   # obtener pathways
+  #   for(ruta in KEGG_paths_cluster_vector){
+  #     # Manejo de errores con tryCatch
+  #     tryCatch({
+  #       # Produce una gráfica de KEGG (PNG)
+  #       pathview(gene.data = degs_sig_ora_kegg_vec,
+  #                pathway.id= ruta,
+  #                species = "ath",
+  #                gene.idtype = gene.idtype.list[11])
+  #     }, error = function(e) {
+  #       cat("Error procesando la ruta:", ruta, ":", conditionMessage(e), "\n")
+  #     })
+  # 
+  #   }
+  # 
+  #   # volver a home
+  #   setwd("~")
+  # }
+  # 
+  # # volver a home
+  # setwd("~")
+  # getwd() 
+  
+  ################################ graficar todas ################################
+  
   # mostrar las rutas enriquecidas en KEGGgraph
-  cat("\nLas rutas enriquecidas inducidas son:", nrow(table_ORA_ClusterCompare_KEGG), "\n")
+  cat("\nLas rutas enriquecidas inducidas y reprimidas son:", nrow(table_ORA_ClusterCompare_KEGG), "\n")
   
   if(nrow(table_ORA_ClusterCompare_KEGG) == 0){
-    cat("saltar analisis") 
+    cat("saltar analisis")
   } else {
     
     for(i in 1:nrow(table_ORA_ClusterCompare_KEGG)){
-      cat(paste(i,".- ", table_ORA_ClusterCompare_KEGG$ID[i], 
+      cat(paste(i,".- ", table_ORA_ClusterCompare_KEGG$ID[i],
                 "\t",
                 table_ORA_ClusterCompare_KEGG$Cluster[i],
                 " = ",
-                table_ORA_ClusterCompare_KEGG$Description[i], sep = ""), sep = "\n")
-    }
+                table_ORA_ClusterCompare_KEGG$Description[i], sep = ""), sep = "\n")}
+  }
+  
+  # obtener pathways
+  for(ruta in table_ORA_ClusterCompare_KEGG$ID){
+    # Manejo de errores con tryCatch
+    tryCatch({
+      # Produce una gráfica de KEGG (PNG)
+      pathview(gene.data = degs_sig_ora_kegg_vec_tair,
+               pathway.id= ruta,
+               species = "ath",
+               gene.idtype = "TAIR")
+    }, error = function(e) {
+      cat("Error procesando la ruta:", ruta, ":", conditionMessage(e), "\n")
+    })
     
-    # pedir rutas inducidas a usuario
-    KEGG_paths_cluster = readline(prompt = "Elige las rutas inducidas que deseas analizar: " )
-    
-    # volver vector
-    KEGG_paths_cluster_vector <- unlist(strsplit(KEGG_paths_cluster, split = " |,|:|;"))
-    
-    # movernos a directorio destino
-    setwd(dir = ora_dir)
-    
-    # obtener pathways
-    for(ruta in KEGG_paths_cluster_vector){
-      # Manejo de errores con tryCatch
-      tryCatch({
-        # Produce una gráfica de KEGG (PNG)
-        pathview(gene.data = degs_sig_ora_kegg_vec,
-                 pathway.id= ruta,
-                 species = "ath",
-                 gene.idtype.list[11])
-      }, error = function(e) {
-        cat("Error procesando la ruta:", ruta, ":", conditionMessage(e), "\n")
-      })
-      
-    }
-    
-    # volver a home
-    setwd("~")
   }
   
   # volver a home
   setwd("~")
+  
   ################################################################################
   ################################### GSEA #######################################
   ################################################################################
@@ -1992,9 +2141,10 @@ wraper_cluster_profiler <- function(degs,
   colnames(table_GSEA_GO_tmp)[12] <- "TAIR" 
   
   # guardar el objeto como tabla
-  write.csv(x = table_GSEA_GO_tmp,
-            file = paste(gsea_dir, "table_GSEA_GO.csv",sep = ""),
-            row.names = FALSE)
+  write_xlsx(x = table_GSEA_GO_tmp,
+             path = paste(gsea_dir, "table_GSEA_GO.xlsx",sep = ""),
+             col_names = TRUE,
+             format_headers = TRUE)
   
   # eliminar columnas innecesarias
   table_GSEA_GO_tmp <- table_GSEA_GO_tmp[, c("ID",
@@ -2005,6 +2155,7 @@ wraper_cluster_profiler <- function(degs,
                                              "rank",
                                              "enrichmentScore",
                                              "NES",
+                                             "leading_edge",
                                              "pvalue",
                                              "p.adjust",
                                              "qvalue")]
@@ -2033,6 +2184,8 @@ wraper_cluster_profiler <- function(degs,
                                                 "rank",
                                                 "enrichmentScore",
                                                 "NES",
+                                                "setSize",
+                                                "leading_edge",
                                                 "pvalue",
                                                 "p.adjust",
                                                 "qvalue",
@@ -2045,9 +2198,10 @@ wraper_cluster_profiler <- function(degs,
                                                 "Ranking")]
   
   # guardar el objeto como tabla
-  write.csv(x = table_GSEA_GO_final,
-            file = paste(gsea_dir, "table_GSEA_GO_final.csv", sep = ""),
-            row.names = FALSE)
+  write_xlsx(x = table_GSEA_GO_final,
+             path = paste(gsea_dir, "table_GSEA_GO_final.xlsx", sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ##################### dot plot ONTOLOGY
   
@@ -2119,8 +2273,15 @@ wraper_cluster_profiler <- function(degs,
   }
   
   ################################################################################
-  ############################# KEGG (Pathways) ##################################
+  ############################# GSEA KEGG (Pathways) #############################
   ################################################################################
+  
+  "nuevo bloque"
+  # TAIR to EC
+  GSEA_TAIR_2_EC <-bitr(names(universe_gsea_vec),
+                        fromType = "TAIR",
+                        toType = "ENZYME",
+                        OrgDb = org.At.tair.db)
   
   # obtener los Gene_IDs para la funcion enrichKEGG(), (podemos perder algunos genes aquí)
   GSEA_TAIR_2_ENTREZIDs <-bitr(names(universe_gsea_vec),
@@ -2128,51 +2289,64 @@ wraper_cluster_profiler <- function(degs,
                                toType = "ENTREZID",
                                OrgDb = org.At.tair.db)
   
+  # unir ENTREZ, TAIR y ENZYME
+  GSEA_TAIR_ENTREZ_ENZYME <- merge(GSEA_TAIR_2_ENTREZIDs, 
+                                   GSEA_TAIR_2_EC, 
+                                   by = "TAIR", 
+                                   all.x = TRUE)
+  
   # add ENTREZ IDs column
-  universe_gsea_kegg <- merge(GSEA_TAIR_2_ENTREZIDs, 
-                              universe_gsea_ordered, #[!duplicated(universe_gsea_ordered$TAIR),],
+  universe_gsea_kegg <- merge(GSEA_TAIR_ENTREZ_ENZYME,
+                              universe_gsea_ordered, 
                               by = "TAIR")
   
   # reordenar nombres de columnas
-  universe_gsea_kegg <- universe_gsea_kegg[,c("ENTREZID",
+  universe_gsea_kegg <- universe_gsea_kegg[,c("Gene_ID",
                                               "TAIR",
-                                              "Gene_ID",
+                                              "ENTREZID",
+                                              "ENZYME",
                                               "Ranking",
                                               "Blast1",
                                               "Gene_Symbol",
+                                              "Common_2oo3",
                                               "log2FC",
                                               "Pval",
                                               "Padj",
-                                              "DEGs")]
+                                              "DEGs",
+                                              "Treatment")]
   
   # ordenar por ranking
   universe_gsea_kegg <- universe_gsea_kegg[order(universe_gsea_kegg$Ranking, decreasing = TRUE),]
   
   # crear vector de universo
-  universe_gsea_kegg_vec <- universe_gsea_kegg$Ranking
+  universe_gsea_kegg_vec_entrez <- universe_gsea_kegg$Ranking
+  universe_gsea_kegg_vec_tair <- universe_gsea_kegg$Ranking
   
   # nombrar vector de universo
-  names(universe_gsea_kegg_vec) <- universe_gsea_kegg$ENTREZID
+  names(universe_gsea_kegg_vec_entrez) <- universe_gsea_kegg$ENTREZID
+  names(universe_gsea_kegg_vec_tair) <- universe_gsea_kegg$TAIR
   
   cat("\nvector GSEA KEGG\n")
   # verificar vector de universo
-  head(universe_gsea_kegg_vec)
+  cat("Primeros valores ENTREZID:", head(universe_gsea_kegg_vec_entrez))
+  cat("Primeros valores TAIR:", head(universe_gsea_kegg_vec_tair))
   # verificar vector de universo
-  tail(universe_gsea_kegg_vec)
+  cat("Ultimos valores ENTREZID:", tail(universe_gsea_kegg_vec_entrez))
+  cat("Ultimos valores TAIR:", tail(universe_gsea_kegg_vec_tair))
   
   ################################################################################
   ################################ gseKEGG #######################################
   ################################################################################
   
   # Arabidopsis thaliana
-  # options(download.file.method = "libcurl")
-  gseaKEGG <- gseKEGG(geneList = universe_gsea_kegg_vec,
+  gseaKEGG <- gseKEGG(geneList = universe_gsea_kegg_vec_entrez,
                       organism = "ath",
                       pvalueCutoff = 0.05, 
                       minGSSize = min_set_kegg, 
                       maxGSSize = max_set_kegg,
-                      pAdjustMethod = "none",
+                      pAdjustMethod = "BH",
                       keyType = "ncbi-geneid")
+  #?gseKEGG()
   
   # remover especie de filas
   gseaKEGG@result$Description <- gsub(
@@ -2187,55 +2361,53 @@ wraper_cluster_profiler <- function(degs,
   colnames(table_GSEA_KEGG)[11] <- "ENTREZID"
   
   # guardar el objeto como tabla
-  write.csv(x = table_GSEA_KEGG,
-            file = paste(gsea_dir, "/", "table_GSEA_KEGG.csv",sep = ""),
-            row.names = FALSE)
-  
-  # eliminar columnas innecesarias
-  table_GSEA_KEGG_tmp <- table_GSEA_KEGG[, c("ID",
-                                             "Description",
-                                             "ENTREZID",
-                                             "setSize",
-                                             "enrichmentScore",
-                                             "NES",
-                                             "pvalue",
-                                             "p.adjust",
-                                             "qvalue")]
+  write_xlsx(x = table_GSEA_KEGG,
+             path = paste(gsea_dir, "/", "table_GSEA_KEGG.xlsx",sep = ""),
+             col_names = TRUE,
+             format_headers = TRUE)
   
   # separar columnas
-  table_GSEA_KEGG_long <- table_GSEA_KEGG_tmp %>% 
+  table_GSEA_KEGG_long <- table_GSEA_KEGG %>% 
     separate_rows(ENTREZID, sep = "/")
   
   # unir datos de entrada con datos de salida en un super data frame
-  table_GSEA_KEGG_final <- merge(table_GSEA_KEGG_long, universe_gsea_kegg, by = "ENTREZID")
+  table_GSEA_KEGG_final <- merge(universe_gsea_kegg, 
+                                 table_GSEA_KEGG_long, 
+                                 by = "ENTREZID", 
+                                 all.Y = TRUE)
   
   # remover duplicados
   table_GSEA_KEGG_final <- table_GSEA_KEGG_final[!duplicated(table_GSEA_KEGG_final),]
   
   # ordenar columnas por Trinity ID
-  table_GSEA_KEGG_final <- table_GSEA_KEGG_final[order(table_GSEA_KEGG_final$TAIR),]
+  table_GSEA_KEGG_final <- table_GSEA_KEGG_final[order(table_GSEA_KEGG_final$Gene_ID),]
   
   # cambiar orden de columnas
   table_GSEA_KEGG_final <- table_GSEA_KEGG_final[,c("Gene_ID",
                                                     "TAIR",
+                                                    "ENTREZID",
+                                                    "ENZYME",
                                                     "ID",
                                                     "Description",
                                                     "enrichmentScore",
+                                                    "Ranking",
                                                     "NES",
                                                     "pvalue",
                                                     "p.adjust",
                                                     "qvalue",
                                                     "Blast1",
                                                     "Gene_Symbol",
+                                                    "Common_2oo3",
                                                     "log2FC",
                                                     "DEGs",
                                                     "Pval",
                                                     "Padj")]
   
   # guardar el objeto como tabla
-  write.csv(x = table_GSEA_KEGG_final,
-            file = paste(gsea_dir, "/", "table_GSEA_KEGG_final.csv",sep = ""),
-            row.names = FALSE)
+  write_xlsx(x = table_GSEA_KEGG_final,
+             path = paste(gsea_dir, "/", "table_GSEA_KEGG_final.xlsx",sep = ""),
+             col_names = TRUE, 
+             format_headers = TRUE)
   
   ##################### dot plot 
   
@@ -2359,23 +2531,25 @@ wraper_cluster_profiler <- function(degs,
               table_GSEA_KEGG$Description[i], sep = ""), sep = "\n")
   }
   
-  # pedir rutas a ususario
-  KEGG_paths = readline(prompt = "Elige las rutas que deseas analizar: " )
+  # # pedir rutas a ususario
+  # KEGG_paths = readline(prompt = "Elige las rutas que deseas analizar: " )
+  # 
+  # # volver vector
+  # KEGG_paths_vector <- unlist(strsplit(KEGG_paths, split = " |,|:|;"))
+  # 
+  # # movernos a directorio destino
+  # setwd(dir = gsea_dir)
   
-  # volver vector
-  KEGG_paths_vector <- unlist(strsplit(KEGG_paths, split = " |,|:|;"))
-  
-  # movernos a directorio destino
-  setwd(dir = gsea_dir)
-  
-  for(ruta in KEGG_paths_vector){
+  ################################################################################
+  # Todos juntos
+  for(ruta in table_GSEA_KEGG$ID){
     # Manejo de errores con tryCatch
     tryCatch({
-    # Produce una gráfica de KEGG (PNG)
-    pathview(gene.data = universe_gsea_kegg_vec,
-             pathway.id= ruta,
-             species = "ath",
-             gene.idtype.list[11])
+      # Produce una gráfica de KEGG (PNG)
+      pathview(gene.data = universe_gsea_kegg_vec_tair,
+               pathway.id= ruta,
+               species = "ath",
+               gene.idtype = "TAIR")
     }, error = function(e) {
       cat("Error procesando la ruta:", ruta, ":", conditionMessage(e), "\n")
     })
