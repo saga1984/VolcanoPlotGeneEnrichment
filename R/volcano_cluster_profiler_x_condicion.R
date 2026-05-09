@@ -329,13 +329,12 @@ degs_por_condicion <- function(archivo_limma,
   # visualizar en R
   print(volcano)
   
-  
   print(paste("Total: Upreglated = ", up_t))
   print(paste("Total: Downreglated = ", down_t))
   print(paste("Total: Not Significant = ", not_significant_t))
   print(paste("Common 2 out of 3: Upreglated = ", up_c))
   print(paste("Common 2 out of 3: Downreglated = ", down_c))
-  print(paste("Total Not Significant = ", not_significant_c))
+  print(paste("Common 2 out of 3: Not Significant = ", not_significant_c))
   
   # save output
   out11 <- "Total Upreglated"

@@ -2312,8 +2312,7 @@ wraper_cluster_profiler <- function(degs,
                                               "log2FC",
                                               "Pval",
                                               "Padj",
-                                              "DEGs",
-                                              "Treatment")]
+                                              "DEGs")]
   
   # ordenar por ranking
   universe_gsea_kegg <- universe_gsea_kegg[order(universe_gsea_kegg$Ranking, decreasing = TRUE),]
