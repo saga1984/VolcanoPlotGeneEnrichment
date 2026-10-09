@@ -104,8 +104,7 @@ degs_por_condicion <- function(archivo_limma,
     
     # agregar columnas de Gene_ID
     datos[[archivo]]["Gene_ID"] <- rownames(datos[[archivo]])
-    
-    
+      
     # if statment para cambiar nombres de columnas de cada data frame
     if(names(datos[archivo]) == "archivo_DESeq2"){
       
@@ -147,10 +146,10 @@ degs_por_condicion <- function(archivo_limma,
   }
   
   # Sort each data frame in the list
-sorted_datos <- lapply(datos, sort_df_by_rownames)
+  sorted_datos <- lapply(datos, sort_df_by_rownames)
 
-# NUEVO CODIGO: comprobar alineacion entre metodos
-stopifnot(
+ # NUEVO CODIGO: comprobar alineacion entre metodos
+ stopifnot(
   identical(
     rownames(sorted_datos[[1]]),
     rownames(sorted_datos[[2]])
@@ -160,11 +159,15 @@ stopifnot(
     rownames(sorted_datos[[3]])
   ),
   !anyDuplicated(rownames(sorted_datos[[1]]))
-)
+ )
 
-# Combine sorted data frames using cbind
-big_df_degs_cbind <- do.call(cbind, sorted_datos)
-  
+ # Combine sorted data frames using cbind
+ big_df_degs_cbind <- do.call(cbind, sorted_datos)
+
+ # QC debe ser 0
+ cat("QC debe ser cero (0)")
+ # nrow(big_df_degs_cbind[is.na(big_df_degs_cbind$DEGs),])
+   
   ########################## obtener universo de datos ###########################
   
   # dividir un data frame en 3 data frames: 1 para pvalue, 1 para pvalue ajustado y 1 para log2fc
@@ -197,12 +200,12 @@ big_df_degs_cbind <- do.call(cbind, sorted_datos)
   
   # volver a crear columna de DEGs
   df_universe_clean[, "DEGs"] <- case_when(
-    df_universe_clean$Padj < 0.05 & df_universe_clean$log2FC > 1 * corte ~ "Upregulated",
-    df_universe_clean$Padj < 0.05 & df_universe_clean$log2FC < -1 * corte ~ "Downregulated",
-    df_universe_clean$Padj > 0.05 | 
-      (df_universe_clean$log2FC < 1 * corte & df_universe_clean$log2FC > -1 * corte)~ "Not Significant")
+    df_universe_clean$Padj < 0.05 & df_universe_clean$log2FC >= corte ~ "Upregulated",
+    df_universe_clean$Padj < 0.05 & df_universe_clean$log2FC <= -corte ~ "Downregulated",
+    TRUE ~ "Not Significant")
   
-  # QC should be 0
+  # QC debe ser 0
+  cat("QC debe ser cero (0)")
   # nrow(df_universe_clean[is.na(df_universe_clean$DEGs),])
   
   # crear variable de nuevo_dir
