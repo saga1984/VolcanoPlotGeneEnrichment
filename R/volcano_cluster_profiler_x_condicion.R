@@ -147,10 +147,23 @@ degs_por_condicion <- function(archivo_limma,
   }
   
   # Sort each data frame in the list
-  sorted_datos <- lapply(datos, sort_df_by_rownames)
-  
-  # Combine sorted data frames using cbind
-  big_df_degs_cbind <- do.call(cbind, sorted_datos)
+sorted_datos <- lapply(datos, sort_df_by_rownames)
+
+# NUEVO CODIGO: comprobar alineacion entre metodos
+stopifnot(
+  identical(
+    rownames(sorted_datos[[1]]),
+    rownames(sorted_datos[[2]])
+  ),
+  identical(
+    rownames(sorted_datos[[1]]),
+    rownames(sorted_datos[[3]])
+  ),
+  !anyDuplicated(rownames(sorted_datos[[1]]))
+)
+
+# Combine sorted data frames using cbind
+big_df_degs_cbind <- do.call(cbind, sorted_datos)
   
   ########################## obtener universo de datos ###########################
   
@@ -213,21 +226,31 @@ degs_por_condicion <- function(archivo_limma,
   colnames(df_degs) <- gsub("^.*_", "", colnames(df_degs))
   
   # unique(df_degs[1,])
-  
-  # obtener lista de Gene_id comunes a 2 de 3 herramientas
-  for(i in 1:nrow(df_degs)){
-    # contar numero de Not Significants 
-    df_degs[i, "Conteo_2d3"] <- sum(str_count(df_degs[i,], "Not Significant"))
-  }
-  
-  # remover filas donde el conteo de no significativos es mayor que 1
-  for(i in 1:nrow(df_degs)){
-    # crear columna de status
-    df_degs[i, "Common_2oo3"] <- ifelse(df_degs$Conteo_2d3[i] > 1, "","Common2oo3")
-  }
-  
-  # remover columna de conteos dos de tres
-  df_degs[,"Conteo_2d3"] <- NULL
+
+  # NUEVO CODIGO: consenso direccional 2 de 3
+
+# Comprobar nombres de columnas
+print(colnames(df_degs))
+
+# Contar coincidencias Upregulated
+n_up <- rowSums(
+  df_degs == "Upregulated",
+  na.rm = TRUE
+)
+
+# Contar coincidencias Downregulated
+n_down <- rowSums(
+  df_degs == "Downregulated",
+  na.rm = TRUE
+)
+
+# Asignar consenso cuando al menos
+# dos metodos coinciden en direccion
+df_degs$Common_2oo3 <- ifelse(
+  n_up >= 2 | n_down >= 2,
+  "Common2oo3",
+  ""
+)
   
   # agregar columna de Gene_IDs
   df_degs[, "Gene_ID"] <- row.names(df_degs) 
